@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Damask Holdings — Private Holdings Company</title>
+<meta name="description" content="A private holdings company. Operating since 2019.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Archivo+Narrow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060605; --bg-elev:#0c0b09; --bg-card:#100e0b;
+  --text:#e8e4dc; --text-dim:#8a8478; --text-faint:#4a443c; --text-ghost:#2a261f;
+  --accent:#9a2f24; --accent-bright:#c44a3a; --accent-dim:#5a1c16;
+  --border:#1a1814; --border-bright:#2a2620;
+  --mono:'JetBrains Mono',monospace; --sans:'Space Grotesk',sans-serif; --narrow:'Archivo Narrow',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+::selection{background:var(--accent);color:var(--text)}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--sans);
+  font-weight:400;line-height:1.5;overflow-x:hidden;position:relative;
+  cursor:none;
+}
+#bg-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+body::before{
+  content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity:.035;z-index:1;pointer-events:none;mix-blend-mode:overlay;
+}
+
+/* Custom cursor */
+.cursor{position:fixed;top:0;left:0;width:28px;height:28px;border:1px solid var(--accent-bright);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:9999;transition:width .25s,height .25s,background .25s;mix-blend-mode:difference}
+.cursor-dot{position:fixed;top:0;left:0;width:4px;height:4px;background:var(--accent-bright);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:9999}
+.cursor.hover{width:56px;height:56px;background:rgba(196,74,58,.1)}
+
+/* Logo */
+.logo{height:38px;width:auto;max-width:220px;object-fit:contain;user-select:none;-webkit-user-drag:none;pointer-events:none;filter:saturate(1) brightness(1.1);vertical-align:middle;display:block}
+.logo-footer{height:26px;width:auto;max-width:140px;object-fit:contain;user-select:none;-webkit-user-drag:none;pointer-events:none;filter:saturate(1) brightness(1.1);opacity:.9;vertical-align:middle;display:block}
+
+main{position:relative;z-index:2}
+
+/* Topbar */
+.topbar{
+  position:fixed;top:0;left:0;right:0;padding:16px 32px;
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--text-dim);z-index:100;
+  background:linear-gradient(to bottom,rgba(6,6,5,.92),rgba(6,6,5,.6) 70%,rgba(6,6,5,0));
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.topbar .mark{display:flex;align-items:center;gap:14px;justify-self:start}
+.wordmark-small{color:var(--text);letter-spacing:.35em;font-weight:500}
+.topbar nav{display:flex;gap:28px;justify-self:center}
+.topbar nav a{color:var(--text-dim);text-decoration:none;transition:color .3s;position:relative}
+.topbar nav a:hover{color:var(--text)}
+.topbar nav a::before{content:'';position:absolute;left:-16px;top:50%;transform:translateY(-50%);width:4px;height:4px;background:var(--accent);opacity:0;transition:opacity .3s}
+.topbar nav a:hover::before{opacity:1}
+.topbar .status{display:flex;align-items:center;gap:10px;justify-self:end}
+.status .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-bright);box-shadow:0 0 10px var(--accent-bright);animation:pulse 2.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:100px 32px 48px;position:relative}
+.hero-top{position:absolute;top:100px;left:32px;right:32px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-faint)}
+.hero-top .ref span:first-child{color:var(--text-dim);margin-right:8px}
+.hero-title-wrap{margin-bottom:32px}
+.hero h1{font-family:var(--sans);font-weight:700;font-size:clamp(56px,14vw,220px);line-height:.85;letter-spacing:-.045em;color:var(--text)}
+.hero h1 .row{display:block;overflow:hidden}
+.hero h1 .row span{display:inline-block;animation:rise 1.2s cubic-bezier(.22,1,.36,1) backwards}
+.hero h1 .row:nth-child(1) span{animation-delay:.2s}
+.hero h1 .row:nth-child(2) span{animation-delay:.35s}
+@keyframes rise{from{transform:translateY(110%);opacity:0}to{transform:translateY(0);opacity:1}}
+.hero h1 .italic{font-style:italic;font-weight:300;color:var(--accent-bright)}
+.hero-bottom{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:end;padding-top:48px;border-top:1px solid var(--border);animation:fadeIn 1s .8s backwards}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero-statement{font-family:var(--narrow);font-size:17px;line-height:1.55;color:var(--text-dim);max-width:480px}
+.hero-statement em{color:var(--text);font-style:normal;font-weight:500}
+.hero-statement .underline{border-bottom:1px solid var(--accent);padding-bottom:1px}
+.hero-meta{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-faint);display:grid;grid-template-columns:auto 1fr;gap:8px 20px;justify-self:end;text-align:right}
+.hero-meta dt{color:var(--text-dim)}
+.hero-meta dd{color:var(--text)}
+
+/* Sections */
+section{padding:96px 32px;position:relative}
+.section-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.25em;text-transform:uppercase;color:var(--accent-bright);margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.section-label::before{content:'';width:24px;height:1px;background:var(--accent)}
+.section-title{font-family:var(--sans);font-weight:700;font-size:clamp(36px,6vw,72px);line-height:.95;letter-spacing:-.035em;margin-bottom:48px;max-width:900px}
+.section-title .italic{font-style:italic;font-weight:300;color:var(--accent-bright)}
+
+/* Statement */
+.statement{display:grid;grid-template-columns:1fr 2fr;gap:64px;align-items:start}
+.statement-aside{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);line-height:1.9;border-left:1px solid var(--border);padding-left:16px}
+.statement-aside .num{color:var(--accent-bright);margin-right:10px}
+.statement-body{font-family:var(--narrow);font-size:22px;line-height:1.55;color:var(--text-dim);font-weight:400}
+.statement-body p{margin-bottom:24px}
+.statement-body strong{color:var(--text);font-weight:600}
+.statement-body .redacted{background:var(--text);color:var(--text);padding:0 4px;user-select:none;transition:all .3s;cursor:pointer}
+.statement-body .redacted:hover{background:transparent;color:var(--accent-bright)}
+
+/* Practice */
+.practice-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-top:1px solid var(--border)}
+.practice-item{padding:32px 24px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;transition:background .4s;cursor:pointer}
+.practice-item:last-child{border-right:none}
+.practice-item:hover{background:var(--bg-elev)}
+.practice-item:hover .practice-num{color:var(--accent-bright)}
+.practice-num{font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--text-faint);margin-bottom:32px;transition:color .3s}
+.practice-name{font-family:var(--sans);font-weight:600;font-size:22px;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+.practice-desc{font-family:var(--narrow);font-size:13.5px;line-height:1.5;color:var(--text-dim);margin-bottom:32px;min-height:78px}
+.practice-desc--dash{display:flex;align-items:center;font-size:28px;color:var(--text-faint);font-family:var(--sans);font-weight:300}
+
+/* Engagements */
+.engagements-table{border-top:1px solid var(--border)}
+.engagement{display:grid;grid-template-columns:140px 70px 1fr 200px 24px;gap:32px;padding:24px 16px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background .3s,padding .3s;position:relative}
+.engagement:hover{background:var(--bg-elev);padding-left:32px}
+.engagement-code{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--accent-bright)}
+.engagement-year{font-family:var(--mono);font-size:12px;color:var(--text-faint)}
+.engagement-desc{font-family:var(--narrow);font-size:15px;line-height:1.4;color:var(--text);font-weight:500}
+.engagement-mandate{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);text-align:right}
+.engagement-arrow{font-family:var(--mono);color:var(--text-faint);transition:color .3s,transform .3s}
+.engagement:hover .engagement-arrow{color:var(--accent-bright);transform:translateX(4px)}
+.engagement.open .engagement-arrow{transform:rotate(90deg);color:var(--accent-bright)}
+.engagement-detail{grid-column:1/-1;font-family:var(--narrow);font-size:14.5px;line-height:1.55;color:var(--text-dim);max-height:0;overflow:hidden;transition:max-height .5s ease,padding .4s,opacity .4s;opacity:0}
+.engagement.open .engagement-detail{max-height:240px;padding-top:16px;opacity:1;border-top:1px dashed var(--border-bright);margin-top:8px}
+
+/* Globe section */
+.globe-section{display:flex;flex-direction:column;align-items:center;gap:36px;margin-top:48px}
+#globe-container{width:100%;max-width:600px;height:500px;cursor:grab;position:relative}
+#globe-container:active{cursor:grabbing}
+.globe-label{font-family:var(--sans);font-weight:500;font-size:clamp(36px,6vw,72px);letter-spacing:-.035em;color:var(--text);line-height:1;text-align:center}
+.globe-note{font-family:var(--narrow);font-size:15px;color:var(--text-dim);font-style:italic;max-width:460px;text-align:center;line-height:1.5}
+
+/* Stewardship */
+.stewardship-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px}
+.stewardship-stats{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.stat{border-top:1px solid var(--border);padding-top:20px}
+.stat-num{font-family:var(--sans);font-weight:300;font-size:84px;line-height:1;letter-spacing:-.04em;color:var(--text);margin-bottom:14px}
+.stat-num .italic{font-style:italic;color:var(--accent-bright)}
+.stat-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);line-height:1.5}
+.stewardship-text{font-family:var(--narrow);font-size:16px;line-height:1.6;color:var(--text-dim)}
+.stewardship-text p{margin-bottom:20px}
+.stewardship-text p:first-child{font-size:22px;color:var(--text);line-height:1.4;font-weight:500}
+
+/* Contact */
+.contact{text-align:center;padding:140px 32px 120px;position:relative}
+.contact-pre{font-family:var(--mono);font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--text-faint);margin-bottom:36px}
+.contact-email{font-family:var(--sans);font-weight:500;font-size:clamp(28px,5vw,56px);letter-spacing:-.02em;color:var(--text);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:8px;display:inline-block;transition:color .3s}
+.contact-email:hover{color:var(--accent-bright)}
+.contact-pgp{margin-top:48px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--text-faint);display:inline-flex;flex-direction:column;gap:8px;align-items:center}
+.contact-pgp .label{color:var(--text-dim);text-transform:uppercase}
+.contact-pgp .fingerprint{color:var(--text);letter-spacing:.18em;word-spacing:4px}
+.contact-note{margin-top:48px;max-width:580px;margin-left:auto;margin-right:auto;font-family:var(--narrow);font-size:16px;line-height:1.6;color:var(--text-dim);font-style:italic}
+
+/* Footer */
+footer{border-top:1px solid var(--border);padding:32px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-faint)}
+footer .center{display:flex;align-items:center;gap:12px}
+footer .left{text-align:left}
+footer .right{text-align:right}
+
+/* Reveal */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .9s cubic-bezier(.22,1,.36,1),transform .9s cubic-bezier(.22,1,.36,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* Responsive */
+@media (max-width:900px){
+  .topbar nav{display:none}
+  .topbar{grid-template-columns:1fr 1fr;padding:14px 20px}
+  .hero{padding:100px 20px 40px}
+  .hero-top{left:20px;right:20px;flex-direction:column;gap:8px}
+  .hero-bottom{grid-template-columns:1fr;gap:32px}
+  .hero-meta{justify-self:start;text-align:left}
+  section{padding:64px 20px}
+  .statement{grid-template-columns:1fr;gap:32px}
+  .practice-grid{grid-template-columns:1fr 1fr}
+  .practice-item:nth-child(2n){border-right:none}
+  .engagement{grid-template-columns:1fr;gap:8px;padding:20px 16px}
+  .engagement-mandate{text-align:left}
+  .stewardship-grid{grid-template-columns:1fr;gap:40px}
+  .stewardship-stats{grid-template-columns:1fr 1fr}
+  #globe-container{height:380px}
+  footer{grid-template-columns:1fr;gap:12px;text-align:center}
+  footer .left,footer .right{text-align:center}
+  body{cursor:auto}
+  .cursor,.cursor-dot{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<header class="topbar">
+  <div class="mark">
+    <img src="https://z-cdn-media.chatglm.cn/files/1517e550-76f6-4b34-85b6-f3897aa7143f.png?auth_key=1881956513-623812f26641463e94a398ccaa5af7c7-0-e6f92c7453458c1eb5be61db19e58d75" alt="Damask Holdings Logo" class="logo" draggable="false" oncontextmenu="return false;">
+    <span class="wordmark-small">DAMASK HOLDINGS</span>
+  </div>
+  <nav>
+    <a href="#statement">I. Statement</a>
+    <a href="#practice">II. Practice</a>
+    <a href="#engagements">III. Engagements</a>
+    <a href="#reach">IV. Reach</a>
+    <a href="#stewardship">V. Stewardship</a>
+    <a href="#contact">VI. Contact</a>
+  </nav>
+  <div class="status">
+    <span class="dot"></span>
+    <span>EST. 2019</span>
+  </div>
+</header>
+
+<main>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-top">
+    <div class="ref"><span>REF</span><span>DSK / 2019 / 0001</span></div>
+    <div class="ref"><span>EST.</span><span>2019</span></div>
+  </div>
+  <div class="hero-title-wrap">
+    <h1>
+      <span class="row"><span>DAMASK</span></span>
+      <span class="row"><span class="italic">holdings.</span></span>
+    </h1>
+  </div>
+  <div class="hero-bottom">
+    <p class="hero-statement">
+      A private <span class="underline">holdings company</span>. We <em>acquire, operate, and build</em> businesses and assets across a small number of focus areas—on our own terms.
+    </p>
+    <dl class="hero-meta">
+      <dt>Form</dt><dd>Private holdings</dd>
+      <dt>Reach</dt><dd>Earth</dd>
+      <dt>Horizon</dt><dd>Long-term</dd>
+      <dt>Disclosure</dt><dd>None</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- STATEMENT -->
+<section id="statement" class="reveal">
+  <div class="section-label">I. Statement</div>
+  <h2 class="section-title">Capital, held with <span class="italic">patience</span>—and put to work.</h2>
+  <div class="statement">
+    <aside class="statement-aside">
+      <div><span class="num">01</span>Long-term horizon</div>
+      <div><span class="num">02</span>Privately held</div>
+      <div><span class="num">03</span>No public capital</div>
+      <div><span class="num">04</span>No third-party clients</div>
+      <div><span class="num">05</span>Limited public presence</div>
+    </aside>
+    <div class="statement-body">
+      <p>Damask Holdings is a private holdings company. We acquire, operate, and build businesses and assets across a small number of focus areas.</p>
+      <p>We take a <span class="redacted">long-term</span> view. We acquire what we understand, improve what we acquire, and part with it only <span class="redacted">when the timing is right</span>.</p>
+      <p>The work is deliberate. We acquire selectively, improve steadily, and sell when it makes sense.</p>
+      <p><strong>What we own, we build.</strong> The rest is detail.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRACTICE -->
+<section id="practice" class="reveal">
+  <div class="section-label">II. Practice Areas</div>
+  <h2 class="section-title">Five disciplines. One <span class="italic">mandate</span>.</h2>
+  <div class="practice-grid">
+    <div class="practice-item">
+      <div class="practice-num">I / 01</div>
+      <div class="practice-name">Investments</div>
+      <div class="practice-desc">Long-term capital allocation across public markets and select private opportunities.</div>
+    </div>
+    <div class="practice-item">
+      <div class="practice-num">II / 02</div>
+      <div class="practice-name">Marketing Services</div>
+      <div class="practice-desc">A social media marketing agency serving clients across categories.</div>
+    </div>
+    <div class="practice-item">
+      <div class="practice-num">III / 03</div>
+      <div class="practice-name">Brick &amp; Mortar Operations</div>
+      <div class="practice-desc">Two locally operated physical business locations.</div>
+    </div>
+    <div class="practice-item">
+      <div class="practice-num">IV / 04</div>
+      <div class="practice-name">Real Property</div>
+      <div class="practice-desc">Small income-producing real estate holdings.</div>
+    </div>
+    <div class="practice-item">
+      <div class="practice-num">V / 05</div>
+      <div class="practice-name">Undisclosed Small Projects</div>
+      <div class="practice-desc practice-desc--dash">—</div>
+    </div>
+  </div>
+</section>
+
+<!-- ENGAGEMENTS -->
+<section id="engagements" class="reveal">
+  <div class="section-label">III. Selected Engagements</div>
+  <h2 class="section-title">A partial record of <span class="italic">completed</span> work.</h2>
+  <div class="engagements-table">
+    <div class="engagement">
+      <div class="engagement-code">DSK-2020-003</div>
+      <div class="engagement-year">2020</div>
+      <div class="engagement-desc">Acquired, restructured, and sold.</div>
+      <div class="engagement-mandate">Divested</div>
+      <div class="engagement-arrow">→</div>
+      <div class="engagement-detail">Closed 2021. No further interest retained.</div>
+    </div>
+    <div class="engagement">
+      <div class="engagement-code">DSK-2020-011</div>
+      <div class="engagement-year">2020</div>
+      <div class="engagement-desc">Acquired and divested.</div>
+      <div class="engagement-mandate">Divested</div>
+      <div class="engagement-arrow">→</div>
+      <div class="engagement-detail">Closed 2021. No further interest retained.</div>
+    </div>
+    <div class="engagement">
+      <div class="engagement-code">DSK-2021-006</div>
+      <div class="engagement-year">2021</div>
+      <div class="engagement-desc">Acquired, optimized, and sold.</div>
+      <div class="engagement-mandate">Divested</div>
+      <div class="engagement-arrow">→</div>
+      <div class="engagement-detail">Closed 2023. No further interest retained.</div>
+    </div>
+    <div class="engagement">
+      <div class="engagement-code">DSK-2021-018</div>
+      <div class="engagement-year">2021</div>
+      <div class="engagement-desc">Acquired and sold.</div>
+      <div class="engagement-mandate">Divested</div>
+      <div class="engagement-arrow">→</div>
+      <div class="engagement-detail">Closed 2022. No further interest retained.</div>
+    </div>
+    <div class="engagement">
+      <div class="engagement-code">DSK-2022-009</div>
+      <div class="engagement-year">2022</div>
+      <div class="engagement-desc">Acquired, restructured, and divested.</div>
+      <div class="engagement-mandate">Divested</div>
+      <div class="engagement-arrow">→</div>
+      <div class="engagement-detail">Closed 2024. No further interest retained.</div>
+    </div>
+    <div class="engagement">
+      <div class="engagement-code">DSK-2023-004</div>
+      <div class="engagement-year">2023</div>
+      <div class="engagement-desc">Acquired and sold.</div>
+      <div class="engagement-mandate">Divested</div>
+      <div class="engagement-arrow">→</div>
+      <div class="engagement-detail">Closed 2024. No further interest retained.</div>
+    </div>
+    <div class="engagement">
+      <div class="engagement-code">DSK-2024-007</div>
+      <div class="engagement-year">2024</div>
+      <div class="engagement-desc">Acquired, improved, and sold.</div>
+      <div class="engagement-mandate">Divested</div>
+      <div class="engagement-arrow">→</div>
+      <div class="engagement-detail">Closed 2025. No further interest retained.</div>
+    </div>
+  </div>
+</section>
+
+<!-- REACH (Globe) -->
+<section id="reach" class="reveal">
+  <div class="section-label">IV. Reach</div>
+  <h2 class="section-title">One <span class="italic">Earth</span>.</h2>
+  <div class="globe-section">
+    <div id="globe-container"></div>
+    <div class="globe-label">Earth</div>
+    <p class="globe-note">Damask Holdings maintains a limited physical footprint by design.</p>
+  </div>
+</section>
+
+<!-- STEWARDSHIP -->
+<section id="stewardship" class="reveal">
+  <div class="section-label">V. Stewardship</div>
+  <h2 class="section-title">A small team. A <span class="italic">long</span> memory.</h2>
+  <div class="stewardship-grid">
+    <div>
+      <div class="stewardship-stats">
+        <div class="stat"><div class="stat-num">15<span class="italic">+</span></div><div class="stat-label">Successful<br>projects</div></div>
+        <div class="stat"><div class="stat-num">7</div><div class="stat-label">Years<br>in business</div></div>
+        <div class="stat"><div class="stat-num">7</div><div class="stat-label">Companies acquired<br>and divested</div></div>
+        <div class="stat"><div class="stat-num">—</div><div class="stat-label">Ownership<br>Privately held</div></div>
+      </div>
+    </div>
+    <div class="stewardship-text">
+      <p>Damask Holdings is privately managed, with a deliberately small team and no public-facing leadership.</p>
+      <p>Decisions are made internally and on a long-term horizon. We acquire selectively, improve steadily, and part with assets only when the timing is right.</p>
+      <p>We plan in years, not quarters. The work is its own record.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="reveal">
+  <div class="contact-pre">VI. For correspondence</div>
+  <a href="mailto:correspondence@damask.holdings" class="contact-email">correspondence@damask.holdings</a>
+  <div class="contact-pgp">
+    <span class="label">PGP Fingerprint</span>
+    <span class="fingerprint">9F2A 4C71 8E3D B051 6F2C 7A18 9D3E 5B40 1F8A 2E6D</span>
+  </div>
+  <p class="contact-note">Communications are received and reviewed within seventy-two hours, in order of arrival. We do not maintain a telephone. We do not receive visitors. We do not respond to unsolicited outreach concerning prospective engagements.</p>
+</section>
+
+</main>
+
+<footer>
+  <div class="left">© MMXXV Damask Holdings · All rights reserved</div>
+  <div class="center">
+    <img src="https://z-cdn-media.chatglm.cn/files/1517e550-76f6-4b34-85b6-f3897aa7143f.png?auth_key=1881956513-623812f26641463e94a398ccaa5af7c7-0-e6f92c7453458c1eb5be61db19e58d75" alt="Damask Holdings Logo" class="logo-footer" draggable="false" oncontextmenu="return false;">
+    <span>DSK</span>
+  </div>
+  <div class="right">No advertisement. No solicitation. No exceptions.</div>
+</footer>
+
+<!-- Three.js importmap -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+
+<!-- Main site script (background + cursor + interactions) -->
+<script>
+/* ===========================
+   Interactive Particle Background
+   =========================== */
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d', { alpha: false });
+let W = 0, H = 0, DPR = 1;
+const particles = [];
+const PARTICLE_COUNT = window.innerWidth < 768 ? 180 : 380;
+const mouse = { x: -1000, y: -1000, lastX: -1000, lastY: -1000, vx: 0, vy: 0, active: false };
+const MOUSE_RADIUS = 200;
+const MOUSE_RADIUS_SQ = MOUSE_RADIUS * MOUSE_RADIUS;
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = Math.floor(W * DPR);
+  canvas.height = Math.floor(H * DPR);
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = '#060605';
+  ctx.fillRect(0, 0, W, H);
+}
+
+function initParticles() {
+  particles.length = 0;
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      size: Math.random() * 1.2 + 0.4,
+      baseAlpha: Math.random() * 0.45 + 0.12,
+      phase: Math.random() * Math.PI * 2,
+    });
+  }
+}
+
+function flowAngle(x, y, t) {
+  return (Math.sin(x * 0.0017 + t * 0.00038) + Math.cos(y * 0.0014 - t * 0.00029)) * Math.PI;
+}
+
+let time = 0;
+let lastTime = performance.now();
+function animate(now) {
+  const dt = Math.min(40, now - lastTime);
+  lastTime = now;
+  time += dt;
+
+  ctx.fillStyle = 'rgba(6, 6, 5, 0.18)';
+  ctx.fillRect(0, 0, W, H);
+
+  for (let i = 0; i < particles.length; i++) {
+    const p = particles[i];
+    const angle = flowAngle(p.x, p.y, time);
+    p.vx += Math.cos(angle) * 0.018;
+    p.vy += Math.sin(angle) * 0.018;
+    p.vx *= 0.965;
+    p.vy *= 0.965;
+
+    if (mouse.active) {
+      const dx = mouse.x - p.x;
+      const dy = mouse.y - p.y;
+      const distSq = dx * dx + dy * dy;
+      if (distSq < MOUSE_RADIUS_SQ && distSq > 4) {
+        const dist = Math.sqrt(distSq);
+        const force = 1 - dist / MOUSE_RADIUS;
+        p.vx += (dx / dist) * force * 0.18;
+        p.vy += (dy / dist) * force * 0.18;
+        p.vx += (-dy / dist) * force * 0.06;
+        p.vy += (dx / dist) * force * 0.06;
+      }
+    }
+
+    p.x += p.vx;
+    p.y += p.vy;
+    p.phase += 0.025;
+
+    if (p.x < -10) p.x = W + 10;
+    if (p.x > W + 10) p.x = -10;
+    if (p.y < -10) p.y = H + 10;
+    if (p.y > H + 10) p.y = -10;
+  }
+
+  if (mouse.active) {
+    ctx.lineWidth = 0.6;
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      const dx = mouse.x - p.x;
+      const dy = mouse.y - p.y;
+      const distSq = dx * dx + dy * dy;
+      if (distSq < MOUSE_RADIUS_SQ) {
+        const dist = Math.sqrt(distSq);
+        const alpha = (1 - dist / MOUSE_RADIUS) * 0.55;
+        ctx.strokeStyle = 'rgba(196, 74, 58, ' + alpha + ')';
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  for (let i = 0; i < particles.length; i++) {
+    const p = particles[i];
+    let alpha = p.baseAlpha + Math.sin(p.phase) * 0.08;
+    let r = 220, g = 210, b = 190;
+    let size = p.size;
+
+    if (mouse.active) {
+      const dx = mouse.x - p.x;
+      const dy = mouse.y - p.y;
+      const distSq = dx * dx + dy * dy;
+      if (distSq < MOUSE_RADIUS_SQ) {
+        const dist = Math.sqrt(distSq);
+        const proximity = 1 - dist / MOUSE_RADIUS;
+        alpha = Math.min(1, alpha + proximity * 0.75);
+        size = size + proximity * 1.6;
+        r = 220 - proximity * 40;
+        g = 210 - proximity * 110;
+        b = 190 - proximity * 110;
+      }
+    }
+
+    ctx.fillStyle = 'rgba(' + (r|0) + ', ' + (g|0) + ', ' + (b|0) + ', ' + alpha + ')';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, Math.max(0.3, size), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (mouse.active) {
+    const grad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, MOUSE_RADIUS);
+    grad.addColorStop(0, 'rgba(196, 74, 58, 0.10)');
+    grad.addColorStop(0.5, 'rgba(196, 74, 58, 0.03)');
+    grad.addColorStop(1, 'rgba(196, 74, 58, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, MOUSE_RADIUS, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  requestAnimationFrame(animate);
+}
+
+window.addEventListener('mousemove', (e) => {
+  mouse.vx = e.clientX - mouse.lastX;
+  mouse.vy = e.clientY - mouse.lastY;
+  mouse.lastX = mouse.x;
+  mouse.lastY = mouse.y;
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  mouse.active = true;
+});
+window.addEventListener('mouseleave', () => { mouse.active = false; mouse.x = -1000; mouse.y = -1000; });
+window.addEventListener('touchmove', (e) => {
+  if (e.touches.length > 0) { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; mouse.active = true; }
+}, { passive: true });
+window.addEventListener('touchend', () => { mouse.active = false; });
+window.addEventListener('resize', () => { resize(); initParticles(); });
+
+resize();
+initParticles();
+requestAnimationFrame((t) => { lastTime = t; animate(t); });
+
+/* ===========================
+   Custom cursor
+   =========================== */
+const cursor = document.getElementById('cursor');
+const cursorDot = document.getElementById('cursorDot');
+let cX = 0, cY = 0, ctX = 0, ctY = 0;
+
+window.addEventListener('mousemove', (e) => {
+  ctX = e.clientX;
+  ctY = e.clientY;
+  cursorDot.style.transform = 'translate(' + e.clientX + 'px, ' + e.clientY + 'px) translate(-50%, -50%)';
+});
+(function loop(){
+  cX += (ctX - cX) * 0.18;
+  cY += (ctY - cY) * 0.18;
+  cursor.style.transform = 'translate(' + cX + 'px, ' + cY + 'px) translate(-50%, -50%)';
+  requestAnimationFrame(loop);
+})();
+document.querySelectorAll('a, .practice-item, .engagement, #globe-container').forEach(el => {
+  el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+  el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+});
+
+/* ===========================
+   Engagement row toggle
+   =========================== */
+document.querySelectorAll('.engagement').forEach(row => {
+  row.addEventListener('click', () => {
+    const wasOpen = row.classList.contains('open');
+    document.querySelectorAll('.engagement').forEach(r => r.classList.remove('open'));
+    if (!wasOpen) row.classList.add('open');
+  });
+});
+
+/* ===========================
+   Reveal on scroll
+   =========================== */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -80px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+/* ===========================
+   Smooth scroll
+   =========================== */
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+  link.addEventListener('click', (e) => {
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  });
+});
+</script>
+
+<!-- Three.js Globe -->
+<script type="module">
+import * as THREE from 'three';
+
+const container = document.getElementById('globe-container');
+if (!container) {
+  // skip if container missing
+} else {
+  try {
+    /* ---- Simplex Noise (compact, seeded) ---- */
+    class SimplexNoise {
+      constructor(seed) {
+        this.perm = new Uint8Array(512);
+        this.permMod12 = new Uint8Array(512);
+        const p = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) p[i] = i;
+        let s = (seed || 1) * 1000;
+        for (let i = 255; i > 0; i--) {
+          s = (s * 9301 + 49297) % 233280;
+          const j = Math.floor((s / 233280) * (i + 1));
+          [p[i], p[j]] = [p[j], p[i]];
+        }
+        for (let i = 0; i < 512; i++) {
+          this.perm[i] = p[i & 255];
+          this.permMod12[i] = this.perm[i] % 12;
+        }
+      }
+      noise3D(x, y, z) {
+        const grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
+        const F3 = 1/3, G3 = 1/6;
+        const s = (x+y+z)*F3;
+        const i = Math.floor(x+s), j = Math.floor(y+s), k = Math.floor(z+s);
+        const t = (i+j+k)*G3;
+        const X0=i-t, Y0=j-t, Z0=k-t;
+        const x0=x-X0, y0=y-Y0, z0=z-Z0;
+        let i1,j1,k1,i2,j2,k2;
+        if (x0>=y0) {
+          if (y0>=z0) {i1=1;j1=0;k1=0;i2=1;j2=1;k2=0;}
+          else if (x0>=z0) {i1=1;j1=0;k1=0;i2=1;j2=0;k2=1;}
+          else {i1=0;j1=0;k1=1;i2=1;j2=0;k2=1;}
+        } else {
+          if (y0<z0) {i1=0;j1=0;k1=1;i2=0;j2=1;k2=1;}
+          else if (x0<z0) {i1=0;j1=1;k1=0;i2=0;j2=1;k2=1;}
+          else {i1=0;j1=1;k1=0;i2=1;j2=1;k2=0;}
+        }
+        const x1=x0-i1+G3, y1=y0-j1+G3, z1=z0-k1+G3;
+        const x2=x0-i2+2*G3, y2=y0-j2+2*G3, z2=z0-k2+2*G3;
+        const x3=x0-1+3*G3, y3=y0-1+3*G3, z3=z0-1+3*G3;
+        const ii=i&255, jj=j&255, kk=k&255;
+        const gi0=this.permMod12[ii+this.perm[jj+this.perm[kk]]];
+        const gi1=this.permMod12[ii+i1+this.perm[jj+j1+this.perm[kk+k1]]];
+        const gi2=this.permMod12[ii+i2+this.perm[jj+j2+this.perm[kk+k2]]];
+        const gi3=this.permMod12[ii+1+this.perm[jj+1+this.perm[kk+1]]];
+        let n0=0,n1=0,n2=0,n3=0;
+        let t0=0.6-x0*x0-y0*y0-z0*z0;
+        if(t0>=0){const g=grad3[gi0];t0*=t0;n0=t0*t0*(g[0]*x0+g[1]*y0+g[2]*z0);}
+        let t1=0.6-x1*x1-y1*y1-z1*z1;
+        if(t1>=0){const g=grad3[gi1];t1*=t1;n1=t1*t1*(g[0]*x1+g[1]*y1+g[2]*z1);}
+        let t2=0.6-x2*x2-y2*y2-z2*z2;
+        if(t2>=0){const g=grad3[gi2];t2*=t2;n2=t2*t2*(g[0]*x2+g[1]*y2+g[2]*z2);}
+        let t3=0.6-x3*x3-y3*y3-z3*z3;
+        if(t3>=0){const g=grad3[gi3];t3*=t3;n3=t3*t3*(g[0]*x3+g[1]*y3+g[2]*z3);}
+        return 32*(n0+n1+n2+n3);
+      }
+      fbm(x, y, z, octaves) {
+        octaves = octaves || 4;
+        let total = 0, freq = 1, amp = 1, max = 0;
+        for (let i = 0; i < octaves; i++) {
+          total += this.noise3D(x*freq, y*freq, z*freq) * amp;
+          max += amp;
+          amp *= 0.5;
+          freq *= 2;
+        }
+        return total / max;
+      }
+    }
+
+    const noise = new SimplexNoise(42);
+
+    /* ---- Scene setup ---- */
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    camera.position.z = 3.3;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    function resizeGlobe() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    container.appendChild(renderer.domElement);
+    resizeGlobe();
+
+    /* ---- Globe group ---- */
+    const globeGroup = new THREE.Group();
+    scene.add(globeGroup);
+
+    const GLOBE_RADIUS = 1.0;
+
+    /* ---- Generate dot positions (fibonacci sphere + noise for land/ocean) ---- */
+    const NUM_POINTS = 8000;
+    const positions = [];
+    const colors = [];
+    const sizes = [];
+    const alphas = [];
+
+    for (let i = 0; i < NUM_POINTS; i++) {
+      const t = i / NUM_POINTS;
+      const inclination = Math.acos(1 - 2 * t);
+      const azimuth = 2 * Math.PI * 0.61803398875 * i;
+
+      const x = Math.sin(inclination) * Math.cos(azimuth);
+      const y = Math.cos(inclination);
+      const z = Math.sin(inclination) * Math.sin(azimuth);
+
+      // Continent-like shapes via fBm
+      const elevation = noise.fbm(x * 1.8, y * 1.8, z * 1.8, 5);
+
+      positions.push(x * GLOBE_RADIUS, y * GLOBE_RADIUS, z * GLOBE_RADIUS);
+
+      if (elevation > 0.02) {
+        // Land — warm silver, brighter for higher elevation
+        const b = 0.55 + Math.min(0.35, elevation * 0.5);
+        colors.push(0.88 * b, 0.82 * b, 0.70 * b);
+        sizes.push(1.8 + elevation * 1.8);
+        alphas.push(0.92);
+      } else {
+        // Ocean — barely visible
+        colors.push(0.18, 0.16, 0.13);
+        sizes.push(0.7);
+        alphas.push(0.12);
+      }
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('aColor', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setAttribute('aSize', new THREE.Float32BufferAttribute(sizes, 1));
+    geometry.setAttribute('aAlpha', new THREE.Float32BufferAttribute(alphas, 1));
+
+    const dotMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        uPixelRatio: { value: renderer.getPixelRatio() }
+      },
+      vertexShader: `
+        attribute float aSize;
+        attribute vec3 aColor;
+        attribute float aAlpha;
+        varying vec3 vColor;
+        varying float vAlpha;
+        varying float vFacing;
+        uniform float uPixelRatio;
+
+        void main() {
+          vColor = aColor;
+          vAlpha = aAlpha;
+          vec3 worldNormal = normalize(mat3(modelMatrix) * position);
+          vec3 worldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+          vec3 toCamera = normalize(cameraPosition - worldPos);
+          vFacing = dot(worldNormal, toCamera);
+
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          gl_Position = projectionMatrix * mvPosition;
+          gl_PointSize = aSize * uPixelRatio * (170.0 / -mvPosition.z);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vColor;
+        varying float vAlpha;
+        varying float vFacing;
+
+        void main() {
+          if (vFacing < -0.02) discard;
+          float visibility = smoothstep(-0.02, 0.22, vFacing);
+
+          vec2 uv = gl_PointCoord - 0.5;
+          float d = length(uv);
+          if (d > 0.5) discard;
+          float alpha = smoothstep(0.5, 0.15, d) * vAlpha * visibility;
+
+          gl_FragColor = vec4(vColor, alpha);
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.NormalBlending
+    });
+
+    const globe = new THREE.Points(geometry, dotMaterial);
+    globeGroup.add(globe);
+
+    /* ---- Inner solid sphere (dark, gradient for depth, occludes back) ---- */
+    const innerGeometry = new THREE.SphereGeometry(GLOBE_RADIUS * 0.985, 64, 64);
+    const innerMaterial = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vNormal;
+        void main() {
+          float facing = dot(vNormal, vec3(0.0, 0.0, 1.0));
+          float grad = smoothstep(-1.0, 1.0, facing);
+          vec3 dark = vec3(0.018, 0.016, 0.012);
+          vec3 lit  = vec3(0.075, 0.065, 0.050);
+          vec3 col = mix(dark, lit, grad);
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `
+    });
+    const innerSphere = new THREE.Mesh(innerGeometry, innerMaterial);
+    globeGroup.add(innerSphere);
+
+    /* ---- Atmosphere rim glow (oxblood) ---- */
+    const atmosphereGeometry = new THREE.SphereGeometry(GLOBE_RADIUS * 1.18, 64, 64);
+    const atmosphereMaterial = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vNormal;
+        void main() {
+          float intensity = pow(0.62 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.8);
+          vec3 col = vec3(0.55, 0.16, 0.12);
+          gl_FragColor = vec4(col, intensity * 0.75);
+        }
+      `,
+      blending: THREE.AdditiveBlending,
+      side: THREE.BackSide,
+      transparent: true,
+      depthWrite: false
+    });
+    const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+    scene.add(atmosphere);
+
+    /* ---- Pin markers (unlabeled, oxblood, pulsing halos) ---- */
+    const pinData = [
+      { lat: 0.35, lon: 0.6 },
+      { lat: -0.15, lon: 2.2 },
+      { lat: 0.55, lon: -1.3 },
+      { lat: -0.45, lon: -2.4 },
+      { lat: 0.08, lon: 1.9 },
+      { lat: 0.42, lon: -0.7 },
+      { lat: -0.30, lon: 0.2 }
+    ];
+
+    const pins = [];
+    pinData.forEach(({ lat, lon }) => {
+      const r = GLOBE_RADIUS * 1.005;
+      const x = r * Math.cos(lat) * Math.cos(lon);
+      const y = r * Math.sin(lat);
+      const z = r * Math.cos(lat) * Math.sin(lon);
+
+      const pin = new THREE.Mesh(
+        new THREE.SphereGeometry(0.016, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xc44a3a })
+      );
+      pin.position.set(x, y, z);
+      globeGroup.add(pin);
+
+      const halo = new THREE.Mesh(
+        new THREE.SphereGeometry(0.038, 16, 16),
+        new THREE.MeshBasicMaterial({
+          color: 0xc44a3a,
+          transparent: true,
+          opacity: 0.22,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        })
+      );
+      halo.position.set(x, y, z);
+      globeGroup.add(halo);
+
+      pins.push({ halo, phase: Math.random() * Math.PI * 2 });
+    });
+
+    /* ---- Initial tilt ---- */
+    globeGroup.rotation.x = 0.32;
+    globeGroup.rotation.y = -0.4;
+
+    /* ---- Interaction (drag to rotate) ---- */
+    let isDragging = false;
+    let prevPointer = { x: 0, y: 0 };
+    let velocity = { x: 0, y: 0 };
+    let autoRotate = true;
+    let lastInteractionTime = 0;
+
+    function onPointerDown(e) {
+      isDragging = true;
+      autoRotate = false;
+      const pt = e.touches ? e.touches[0] : e;
+      prevPointer = { x: pt.clientX, y: pt.clientY };
+      container.style.cursor = 'grabbing';
+    }
+    function onPointerMove(e) {
+      if (!isDragging) return;
+      const pt = e.touches ? e.touches[0] : e;
+      const dx = pt.clientX - prevPointer.x;
+      const dy = pt.clientY - prevPointer.y;
+      velocity.x = dy * 0.005;
+      velocity.y = dx * 0.005;
+      globeGroup.rotation.x += velocity.x;
+      globeGroup.rotation.y += velocity.y;
+      globeGroup.rotation.x = Math.max(-Math.PI * 0.48, Math.min(Math.PI * 0.48, globeGroup.rotation.x));
+      prevPointer = { x: pt.clientX, y: pt.clientY };
+      lastInteractionTime = performance.now();
+      if (e.touches) e.preventDefault();
+    }
+    function onPointerUp() {
+      isDragging = false;
+      container.style.cursor = 'grab';
+      lastInteractionTime = performance.now();
+    }
+
+    container.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+    container.addEventListener('touchstart', onPointerDown, { passive: false });
+    window.addEventListener('touchmove', onPointerMove, { passive: false });
+    window.addEventListener('touchend', onPointerUp);
+    container.style.cursor = 'grab';
+
+    /* ---- Animation loop ---- */
+    function animateGlobe() {
+      requestAnimationFrame(animateGlobe);
+
+      const timeSince = performance.now() - lastInteractionTime;
+      if (!isDragging && timeSince > 2000) {
+        autoRotate = true;
+      }
+
+      if (autoRotate && !isDragging) {
+        globeGroup.rotation.y += 0.0014;
+      } else if (!isDragging) {
+        globeGroup.rotation.x += velocity.x;
+        globeGroup.rotation.y += velocity.y;
+        velocity.x *= 0.92;
+        velocity.y *= 0.92;
+        globeGroup.rotation.x = Math.max(-Math.PI * 0.48, Math.min(Math.PI * 0.48, globeGroup.rotation.x));
+      }
+
+      // Pulse pin halos
+      for (let i = 0; i < pins.length; i++) {
+        const p = pins[i];
+        p.phase += 0.028;
+        const s = 1 + Math.sin(p.phase) * 0.28;
+        p.halo.scale.setScalar(s);
+        p.halo.material.opacity = 0.14 + Math.sin(p.phase) * 0.10;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', resizeGlobe);
+    animateGlobe();
+  } catch (err) {
+    console.warn('Globe initialization failed:', err);
+  }
+}
+</script>
+
+</body>
+</html>
