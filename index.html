@@ -428,16 +428,90 @@ footer .right{text-align:right}
 <!-- Main site script (background + cursor + interactions) -->
 <script>
 /* ===========================
-   Interactive Particle Background
+   Topographic Contour Background
    =========================== */
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d', { alpha: false });
 let W = 0, H = 0, DPR = 1;
-const particles = [];
-const PARTICLE_COUNT = window.innerWidth < 768 ? 180 : 380;
-const mouse = { x: -1000, y: -1000, lastX: -1000, lastY: -1000, vx: 0, vy: 0, active: false };
-const MOUSE_RADIUS = 200;
-const MOUSE_RADIUS_SQ = MOUSE_RADIUS * MOUSE_RADIUS;
+
+/* Compact, seeded SimplexNoise (3D) for slow temporal drift */
+class SimplexNoise {
+  constructor(seed) {
+    this.perm = new Uint8Array(512);
+    this.permMod12 = new Uint8Array(512);
+    const p = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) p[i] = i;
+    let s = (seed || 1) * 1000;
+    for (let i = 255; i > 0; i--) {
+      s = (s * 9301 + 49297) % 233280;
+      const j = Math.floor((s / 233280) * (i + 1));
+      [p[i], p[j]] = [p[j], p[i]];
+    }
+    for (let i = 0; i < 512; i++) {
+      this.perm[i] = p[i & 255];
+      this.permMod12[i] = this.perm[i] % 12;
+    }
+  }
+  noise3D(x, y, z) {
+    const grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
+    const F3 = 1/3, G3 = 1/6;
+    const s = (x+y+z)*F3;
+    const i = Math.floor(x+s), j = Math.floor(y+s), k = Math.floor(z+s);
+    const t = (i+j+k)*G3;
+    const X0=i-t, Y0=j-t, Z0=k-t;
+    const x0=x-X0, y0=y-Y0, z0=z-Z0;
+    let i1,j1,k1,i2,j2,k2;
+    if (x0>=y0) {
+      if (y0>=z0) {i1=1;j1=0;k1=0;i2=1;j2=1;k2=0;}
+      else if (x0>=z0) {i1=1;j1=0;k1=0;i2=1;j2=0;k2=1;}
+      else {i1=0;j1=0;k1=1;i2=1;j2=0;k2=1;}
+    } else {
+      if (y0<z0) {i1=0;j1=0;k1=1;i2=0;j2=1;k2=1;}
+      else if (x0<z0) {i1=0;j1=1;k1=0;i2=0;j2=1;k2=1;}
+      else {i1=0;j1=1;k1=0;i2=1;j2=1;k2=0;}
+    }
+    const x1=x0-i1+G3, y1=y0-j1+G3, z1=z0-k1+G3;
+    const x2=x0-i2+2*G3, y2=y0-j2+2*G3, z2=z0-k2+2*G3;
+    const x3=x0-1+3*G3, y3=y0-1+3*G3, z3=z0-1+3*G3;
+    const ii=i&255, jj=j&255, kk=k&255;
+    const gi0=this.permMod12[ii+this.perm[jj+this.perm[kk]]];
+    const gi1=this.permMod12[ii+i1+this.perm[jj+j1+this.perm[kk+k1]]];
+    const gi2=this.permMod12[ii+i2+this.perm[jj+j2+this.perm[kk+k2]]];
+    const gi3=this.permMod12[ii+1+this.perm[jj+1+this.perm[kk+1]]];
+    let n0=0,n1=0,n2=0,n3=0;
+    let t0=0.6-x0*x0-y0*y0-z0*z0;
+    if(t0>=0){const g=grad3[gi0];t0*=t0;n0=t0*t0*(g[0]*x0+g[1]*y0+g[2]*z0);}
+    let t1=0.6-x1*x1-y1*y1-z1*z1;
+    if(t1>=0){const g=grad3[gi1];t1*=t1;n1=t1*t1*(g[0]*x1+g[1]*y1+g[2]*z1);}
+    let t2=0.6-x2*x2-y2*y2-z2*z2;
+    if(t2>=0){const g=grad3[gi2];t2*=t2;n2=t2*t2*(g[0]*x2+g[1]*y2+g[2]*z2);}
+    let t3=0.6-x3*x3-y3*y3-z3*z3;
+    if(t3>=0){const g=grad3[gi3];t3*=t3;n3=t3*t3*(g[0]*x3+g[1]*y3+g[2]*z3);}
+    return 32*(n0+n1+n2+n3);
+  }
+  fbm(x, y, z, octaves) {
+    octaves = octaves || 4;
+    let total = 0, freq = 1, amp = 1, max = 0;
+    for (let i = 0; i < octaves; i++) {
+      total += this.noise3D(x*freq, y*freq, z*freq) * amp;
+      max += amp;
+      amp *= 0.5;
+      freq *= 2;
+    }
+    return total / max;
+  }
+}
+
+const topoNoise = new SimplexNoise(11);
+const mouse = { x: -2000, y: -2000, tx: -2000, ty: -2000, active: false, strength: 0 };
+
+const isMobile = window.innerWidth < 768;
+const CELL = isMobile ? 28 : 22; 
+const CONTOUR_LEVELS = isMobile
+  ? [0.14, 0.22, 0.30, 0.38, 0.46, 0.54, 0.62, 0.70, 0.78, 0.86]
+  : [0.12, 0.19, 0.26, 0.33, 0.40, 0.47, 0.54, 0.61, 0.68, 0.75, 0.82, 0.89]; // Denser lines for a richer map
+const MOUSE_RADIUS = isMobile ? 240 : 340;
+const BINS = 14;
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -452,145 +526,177 @@ function resize() {
   ctx.fillRect(0, 0, W, H);
 }
 
-function initParticles() {
-  particles.length = 0;
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    particles.push({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.25,
-      vy: (Math.random() - 0.5) * 0.25,
-      size: Math.random() * 1.2 + 0.4,
-      baseAlpha: Math.random() * 0.45 + 0.12,
-      phase: Math.random() * Math.PI * 2,
-    });
-  }
-}
+/* Elevation field: layered fBm + a mouse-driven Gaussian-style uplift */
+function elevation(x, y, t) {
+  const nx = x * 0.0024;
+  const ny = y * 0.0024;
+  let e = topoNoise.fbm(nx, ny, t * 0.00005, 4) * 0.5 + 0.5;
+  e += 0.22 * (topoNoise.fbm(nx * 0.4 + 50, ny * 0.4 - 30, t * 0.000025, 3) * 0.5 + 0.5);
 
-function flowAngle(x, y, t) {
-  return (Math.sin(x * 0.0017 + t * 0.00038) + Math.cos(y * 0.0014 - t * 0.00029)) * Math.PI;
+  if (mouse.strength > 0.01) {
+    const dx = x - mouse.x;
+    const dy = y - mouse.y;
+    const d2 = dx*dx + dy*dy;
+    const r2 = MOUSE_RADIUS * MOUSE_RADIUS;
+    if (d2 < r2) {
+      const d = Math.sqrt(d2);
+      const f = Math.cos((d / MOUSE_RADIUS) * Math.PI * 0.5);
+      e += f * f * 0.78 * mouse.strength; // Stronger push for more dramatic warping
+    }
+  }
+  return e;
 }
 
 let time = 0;
 let lastTime = performance.now();
+
+/* Marching-squares contour pass, batched into color bins for efficiency */
+function drawContours(t) {
+  const cols = Math.ceil(W / CELL) + 2;
+  const rows = Math.ceil(H / CELL) + 2;
+
+  // Precompute elevation grid
+  const grid = new Float32Array(cols * rows);
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      grid[j * cols + i] = elevation(i * CELL, j * CELL, t);
+    }
+  }
+
+  // One Path2D per color bin (champagne gold → oxblood by proximity)
+  const paths = [];
+  for (let i = 0; i < BINS; i++) paths.push(new Path2D());
+
+  const levels = CONTOUR_LEVELS;
+  const mr2 = MOUSE_RADIUS * MOUSE_RADIUS;
+  const invMR = 1 / MOUSE_RADIUS;
+
+  for (let j = 0; j < rows - 1; j++) {
+    for (let i = 0; i < cols - 1; i++) {
+      const idx = j * cols + i;
+      const v0 = grid[idx];
+      const v1 = grid[idx + 1];
+      const v2 = grid[idx + cols + 1];
+      const v3 = grid[idx + cols];
+
+      const x0 = i * CELL, y0 = j * CELL;
+      const x1 = x0 + CELL, y1 = y0 + CELL;
+
+      // Pick a color bin from cell-center proximity to the cursor
+      let bin = 0;
+      if (mouse.strength > 0.01) {
+        const cx = (x0 + x1) * 0.5 - mouse.x;
+        const cy = (y0 + y1) * 0.5 - mouse.y;
+        const d2 = cx*cx + cy*cy;
+        if (d2 < mr2) {
+          const prox = (1 - Math.sqrt(d2) * invMR) * mouse.strength;
+          bin = Math.min(BINS - 1, Math.max(1, Math.floor(prox * (BINS - 1)) + 1));
+        }
+      }
+      const path = paths[bin];
+
+      for (let li = 0; li < levels.length; li++) {
+        const level = levels[li];
+
+        const b0 = v0 > level;
+        const b1 = v1 > level;
+        const b2 = v2 > level;
+        const b3 = v3 > level;
+
+        if (b0 === b1 && b1 === b2 && b2 === b3) continue;
+
+        // Edge crossings (marching squares)
+        const pts = [];
+        if (b0 !== b1) pts.push(x0 + CELL * (level - v0) / (v1 - v0), y0);
+        if (b1 !== b2) pts.push(x1, y0 + CELL * (level - v1) / (v2 - v1));
+        if (b3 !== b2) pts.push(x0 + CELL * (level - v3) / (v2 - v3), y1);
+        if (b0 !== b3) pts.push(x0, y0 + CELL * (level - v0) / (v3 - v0));
+
+        if (pts.length === 4) {
+          // Saddle: pair into two segments
+          path.moveTo(pts[0], pts[1]);
+          path.lineTo(pts[2], pts[3]);
+          path.moveTo(pts[4], pts[5]);
+          path.lineTo(pts[6], pts[7]);
+        } else if (pts.length === 2) {
+          path.moveTo(pts[0], pts[1]);
+          path.lineTo(pts[2], pts[3]);
+        }
+      }
+    }
+  }
+
+  // Base fill
+  ctx.fillStyle = '#060605';
+  ctx.fillRect(0, 0, W, H);
+
+  // Soft luxurious vignette for depth and focus
+  const vgrad = ctx.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.15, W * 0.5, H * 0.5, Math.max(W, H) * 0.85);
+  vgrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  vgrad.addColorStop(1, 'rgba(0, 0, 0, 0.7)'); // Darker edges
+  ctx.fillStyle = vgrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Stroke each bin: interpolate champagne gold → oxblood
+  ctx.lineWidth = 1.1; // Slightly thicker for visibility
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  for (let i = 0; i < BINS; i++) {
+    const t01 = i / (BINS - 1);
+    // Champagne gold (180, 160, 115) transitioning to Oxblood (196, 74, 58)
+    const r = Math.round(180 + (196 - 180) * t01);
+    const g = Math.round(160 + (74 - 160) * t01);
+    const b = Math.round(115 + (58 - 115) * t01);
+    // Significantly increased base alpha so the map is beautifully visible everywhere
+    const a = 0.15 + t01 * 0.55; 
+    ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + a.toFixed(3) + ')';
+    ctx.stroke(paths[i]);
+  }
+
+  // Halo around the cursor
+  if (mouse.strength > 0.01) {
+    const grad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, MOUSE_RADIUS * 1.15);
+    grad.addColorStop(0, 'rgba(196, 74, 58, ' + (0.15 * mouse.strength).toFixed(3) + ')');
+    grad.addColorStop(0.45, 'rgba(196, 74, 58, ' + (0.05 * mouse.strength).toFixed(3) + ')');
+    grad.addColorStop(1, 'rgba(196, 74, 58, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+  }
+}
+
 function animate(now) {
   const dt = Math.min(40, now - lastTime);
   lastTime = now;
   time += dt;
 
-  ctx.fillStyle = 'rgba(6, 6, 5, 0.18)';
-  ctx.fillRect(0, 0, W, H);
+  // Smooth cursor position + strength easing
+  mouse.x += (mouse.tx - mouse.x) * 0.13;
+  mouse.y += (mouse.ty - mouse.y) * 0.13;
+  const targetStrength = mouse.active ? 1 : 0;
+  mouse.strength += (targetStrength - mouse.strength) * 0.07;
 
-  for (let i = 0; i < particles.length; i++) {
-    const p = particles[i];
-    const angle = flowAngle(p.x, p.y, time);
-    p.vx += Math.cos(angle) * 0.018;
-    p.vy += Math.sin(angle) * 0.018;
-    p.vx *= 0.965;
-    p.vy *= 0.965;
-
-    if (mouse.active) {
-      const dx = mouse.x - p.x;
-      const dy = mouse.y - p.y;
-      const distSq = dx * dx + dy * dy;
-      if (distSq < MOUSE_RADIUS_SQ && distSq > 4) {
-        const dist = Math.sqrt(distSq);
-        const force = 1 - dist / MOUSE_RADIUS;
-        p.vx += (dx / dist) * force * 0.18;
-        p.vy += (dy / dist) * force * 0.18;
-        p.vx += (-dy / dist) * force * 0.06;
-        p.vy += (dx / dist) * force * 0.06;
-      }
-    }
-
-    p.x += p.vx;
-    p.y += p.vy;
-    p.phase += 0.025;
-
-    if (p.x < -10) p.x = W + 10;
-    if (p.x > W + 10) p.x = -10;
-    if (p.y < -10) p.y = H + 10;
-    if (p.y > H + 10) p.y = -10;
-  }
-
-  if (mouse.active) {
-    ctx.lineWidth = 0.6;
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
-      const dx = mouse.x - p.x;
-      const dy = mouse.y - p.y;
-      const distSq = dx * dx + dy * dy;
-      if (distSq < MOUSE_RADIUS_SQ) {
-        const dist = Math.sqrt(distSq);
-        const alpha = (1 - dist / MOUSE_RADIUS) * 0.55;
-        ctx.strokeStyle = 'rgba(196, 74, 58, ' + alpha + ')';
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(mouse.x, mouse.y);
-        ctx.stroke();
-      }
-    }
-  }
-
-  for (let i = 0; i < particles.length; i++) {
-    const p = particles[i];
-    let alpha = p.baseAlpha + Math.sin(p.phase) * 0.08;
-    let r = 220, g = 210, b = 190;
-    let size = p.size;
-
-    if (mouse.active) {
-      const dx = mouse.x - p.x;
-      const dy = mouse.y - p.y;
-      const distSq = dx * dx + dy * dy;
-      if (distSq < MOUSE_RADIUS_SQ) {
-        const dist = Math.sqrt(distSq);
-        const proximity = 1 - dist / MOUSE_RADIUS;
-        alpha = Math.min(1, alpha + proximity * 0.75);
-        size = size + proximity * 1.6;
-        r = 220 - proximity * 40;
-        g = 210 - proximity * 110;
-        b = 190 - proximity * 110;
-      }
-    }
-
-    ctx.fillStyle = 'rgba(' + (r|0) + ', ' + (g|0) + ', ' + (b|0) + ', ' + alpha + ')';
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, Math.max(0.3, size), 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  if (mouse.active) {
-    const grad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, MOUSE_RADIUS);
-    grad.addColorStop(0, 'rgba(196, 74, 58, 0.10)');
-    grad.addColorStop(0.5, 'rgba(196, 74, 58, 0.03)');
-    grad.addColorStop(1, 'rgba(196, 74, 58, 0)');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(mouse.x, mouse.y, MOUSE_RADIUS, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
+  drawContours(time);
   requestAnimationFrame(animate);
 }
 
 window.addEventListener('mousemove', (e) => {
-  mouse.vx = e.clientX - mouse.lastX;
-  mouse.vy = e.clientY - mouse.lastY;
-  mouse.lastX = mouse.x;
-  mouse.lastY = mouse.y;
-  mouse.x = e.clientX;
-  mouse.y = e.clientY;
+  mouse.tx = e.clientX;
+  mouse.ty = e.clientY;
   mouse.active = true;
 });
-window.addEventListener('mouseleave', () => { mouse.active = false; mouse.x = -1000; mouse.y = -1000; });
+window.addEventListener('mouseleave', () => { mouse.active = false; });
 window.addEventListener('touchmove', (e) => {
-  if (e.touches.length > 0) { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; mouse.active = true; }
+  if (e.touches.length > 0) {
+    mouse.tx = e.touches[0].clientX;
+    mouse.ty = e.touches[0].clientY;
+    mouse.active = true;
+  }
 }, { passive: true });
 window.addEventListener('touchend', () => { mouse.active = false; });
-window.addEventListener('resize', () => { resize(); initParticles(); });
+window.addEventListener('resize', resize);
 
 resize();
-initParticles();
 requestAnimationFrame((t) => { lastTime = t; animate(t); });
 
 /* ===========================
